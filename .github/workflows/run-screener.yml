@@ -1,0 +1,38 @@
+name: Run Small Mid Cap Screener
+
+on:
+  workflow_dispatch:   # Permite ejecutarlo manualmente desde la pestaña "Actions"
+  schedule:
+    - cron: "0 13 * * 1-5"  # (Opcional) lo ejecuta automáticamente de lunes a viernes a las 13:00 UTC
+
+jobs:
+  run-screener:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Run screener
+        run: python 1.py
+
+      - name: Upload results (si el script guarda un archivo)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screener-results
+          path: |
+            results.csv
+            output.txt
+            *.json
+          if-no-files-found: ignore
